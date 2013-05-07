@@ -594,7 +594,7 @@ Thank you!\n";
 				throw usage_error("Search space dimensions should be positive");
 		}
 
-		log << cite_message << '\n';
+		//log << cite_message << '\n';
 
 		if(search_box_needed && size_x * size_y * size_z > 27e3) {
 			log << "WARNING: The search space volume > 27000 Angstrom^3 (See FAQ)\n";
