@@ -65,6 +65,7 @@ qt angle_to_quaternion(const vec& axis, fl angle); // axis is assumed to be a un
 qt angle_to_quaternion(const vec& rotation); // rotation == angle * axis
 vec quaternion_to_angle(const qt& q);
 mat quaternion_to_r3(const qt& q);
+bool quaternion_is_normalized(const qt& q);
 
 inline fl quaternion_norm_sqr(const qt& q) { // equivalent to sqr(boost::math::abs(const qt&))
 	return sqr(q.R_component_1()) + sqr(q.R_component_2()) + sqr(q.R_component_3()) + sqr(q.R_component_4());
