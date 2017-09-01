@@ -33,6 +33,8 @@
 #include "convert_substring.h"
 #include "parse_error.h"
 
+typedef std::list<std::string> strl;
+
 struct stream_parse_error {
 	unsigned line;
 	std::string reason;
@@ -468,21 +470,22 @@ void postprocess_residue(non_rigid_parsed& nr, parsing_struct& p, context& c) {
 	VINA_CHECK(nr.atoms_inflex_bonds.dim_2() == nr.inflex.size());
 }
 
-void parse_pdbqt_ligand(const path& name, non_rigid_parsed& nr, context& c) {
-	ifile in(name);
+void parse_pdbqt_ligand(const strl& ligand, non_rigid_parsed& nr, context& c) {
+	//ifile in(ligand);
+	ifile in= std::istream(ligand);
 	unsigned count = 0;
 	parsing_struct p;
 	boost::optional<unsigned> torsdof;
 	try {
 		parse_pdbqt_aux(in, count, p, c, torsdof, false);
 		if(p.atoms.empty()) 
-			throw parse_error(name, count, "No atoms in the ligand");
+			throw parse_error(ligand, count, "No atoms in the ligand");
 		if(!torsdof)
-			throw parse_error(name, count, "Missing TORSDOF");
+			throw parse_error(ligand, count, "Missing TORSDOF");
 		postprocess_ligand(nr, p, c, unsigned(torsdof.get())); // bizarre size_t -> unsigned compiler complaint
 	}
 	catch(stream_parse_error& e) {
-		throw e.to_parse_error(name);
+		throw e.to_parse_error(std::string(ligand));
 	}
 	VINA_CHECK(nr.atoms_atoms_bonds.dim() == nr.atoms.size());
 }
@@ -615,10 +618,10 @@ struct pdbqt_initializer {
 	}
 };
 
-model parse_ligand_pdbqt  (const path& name) { // can throw parse_error
+model parse_ligand_pdbqt  (const strl& ligand) { // can throw parse_error
 	non_rigid_parsed nrp;
 	context c;
-	parse_pdbqt_ligand(name, nrp, c);
+	parse_pdbqt_ligand(ligand, nrp, c);
 
 	pdbqt_initializer tmp;
 	tmp.initialize_from_nrp(nrp, c, true);

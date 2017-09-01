@@ -46,6 +46,13 @@
 
 using boost::filesystem::path;
 
+typedef std::list<std::string> strl;
+struct split_model {
+	strl ligand;
+	strl flex;
+};
+typedef std::list<split_model> split_models;
+
 path make_path(const std::string& str) {
 	return path(str);
 }
@@ -370,6 +377,24 @@ void check_occurrence(boost::program_options::variables_map& vm, boost::program_
 	}
 }
 
+
+
+//New parse_bundle
+model parse_bundle(const std::string& rigid_name,
+		const boost::optional<std::string>& flex_name_opt,
+		const strl& ligand) {
+	model tmp = (flex_name_opt) ? parse_receptor_pdbqt(make_path(rigid_name), make_path(flex_name_opt.get()))
+		                        : parse_receptor_pdbqt(make_path(rigid_name));
+	//VINA_FOR_IN(i, ligand_lines)
+		//tmp.append(parse_ligand_pdbqt(ligand_lines));
+
+	//for(strl::const_iterator it = ligand_lines.begin(); it != ligand_lines.end(); ++it)
+		tmp.append(parse_ligand_pdbqt(ligand));
+	return tmp;
+}
+
+
+/*
 model parse_bundle(const std::string& rigid_name, const boost::optional<std::string>& flex_name_opt, const std::vector<std::string>& ligand_names) {
 	model tmp = (flex_name_opt) ? parse_receptor_pdbqt(make_path(rigid_name), make_path(flex_name_opt.get()))
 		                        : parse_receptor_pdbqt(make_path(rigid_name));
@@ -391,7 +416,80 @@ model parse_bundle(const boost::optional<std::string>& rigid_name_opt, const boo
 		return parse_bundle(rigid_name_opt.get(), flex_name_opt, ligand_names);
 	else
 		return parse_bundle(ligand_names);
+}*/
+
+
+//Code Added from split.cpp for Splitting the file into single molecules
+
+split_models parse_multimodel_pdbqt(const std::string& input) {
+	const path p = make_path(input);
+	ifile in(p);
+	split_models tmp;
+	unsigned count = 0;
+	std::string str;
+	bool parsing_model = false;
+	bool parsing_ligand = true;
+	while(std::getline(in, str)) {
+		++count;
+		if(starts_with(str, "MODEL")) {
+			if(parsing_model == true || parsing_ligand == false)
+				throw parse_error(p, count, "Misplaced MODEL tag");
+			tmp.push_back(split_model());
+			parsing_model = true;
+		}
+		else if(starts_with(str, "ENDMDL")) {
+			if(parsing_model == false || parsing_ligand == false)
+				throw parse_error(p, count, "Misplaced ENDMDL tag");
+			parsing_model = false;
+		}
+		else if(starts_with(str, "BEGIN_RES")) {
+			if(parsing_model == false || parsing_ligand == false)
+				throw parse_error(p, count, "Misplaced BEGIN_RES tag");
+			parsing_ligand = false;
+			tmp.back().flex.push_back(str);
+		}
+		else if(starts_with(str, "END_RES")) {
+			if(parsing_model == false || parsing_ligand == true)
+				throw parse_error(p, count, "Misplaced END_RES tag");
+			parsing_ligand = true;
+			tmp.back().flex.push_back(str);
+		}
+		else {
+			if(parsing_model == false)
+				throw parse_error(p, count, "Input occurs outside MODEL");
+			if(parsing_ligand) {
+				tmp.back().ligand.push_back(str);
+			}
+			else {
+				tmp.back().flex.push_back(str);
+			}
+		}
+	}
+	if(parsing_model == true)
+		throw parse_error(p, count+1, "Missing ENDMDL tag");
+	return tmp;
 }
+
+/*
+void write_pdbqt(const strl& lines) {    //Rather than writing, we need to send to vina
+	if(lines.size() > 0) {
+		ofile out(make_path(name));
+		for(strl::const_iterator it = lines.begin(); it != lines.end(); ++it)
+			out << *it << '\n';
+	}
+}
+
+void pipe_multimodel_pdbqt(const models& m) {
+	sz how_many = m.size();
+	std::streamsize w = static_cast<std::streamsize>(to_string(how_many).size());
+	sz counter = 0;
+	for(models::const_iterator it = m.begin(); it != m.end(); ++it) {
+		++counter;
+		const std::string add = to_string(counter, w, '0') + ".pdbqt";
+		write_pdbqt(it->ligand);
+		write_pdbqt(it->flex);
+	}
+}*/
 
 int main(int argc, char* argv[]) {
 	using namespace boost::program_options;
@@ -648,18 +746,24 @@ Thank you!\n";
 
 		doing(verbosity, "Reading input", log);
 
-		model m       = parse_bundle(rigid_name_opt, flex_name_opt, std::vector<std::string>(1, ligand_name));
-			
-		boost::optional<model> ref;
-		done(verbosity, log);
 
-		main_procedure(m, ref, 
+		//Using Splitting code here
+		const split_models& split_models = parse_multimodel_pdbqt(ligand_name);
+		//pipe_multimodel_pdbqt(tmp); // Pipe all molecules one at a time
+
+		for(split_models::const_iterator it = split_models.begin(); it != split_models.end(); ++it) {
+			model m       = parse_bundle(rigid_name, flex_name_opt, it->ligand);
+
+			boost::optional<model> ref;
+			done(verbosity, log);
+
+			main_procedure(m, ref,
 					out_name,
 					score_only, local_only, randomize_only, false, // no_cache == false
 					gd, exhaustiveness,
 					weights,
 					cpu, seed, verbosity, max_modes_sz, energy_range, log);
-	}
+	}}
 	catch(file_error& e) {
 		std::cerr << "\n\nError: could not open \"" << e.name.string() << "\" for " << (e.in ? "reading" : "writing") << ".\n";
 		return 1;
