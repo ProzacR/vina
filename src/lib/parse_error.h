@@ -24,7 +24,7 @@
 #define VINA_PARSE_ERROR_H
 
 #include "common.h"
-
+typedef std::list<std::string> strl;
 struct parse_error {
 	path file;
 	unsigned line;
@@ -33,5 +33,15 @@ struct parse_error {
 private:
 	parse_error() {}
 };
+
+struct parse_error_ligand {
+	strl ligand;
+	unsigned line;
+	std::string reason;
+	parse_error_ligand(const strl& ligand_, unsigned line_, const std::string& reason_ = "") : ligand(ligand_), line(line_), reason(reason_) {}
+private:
+	parse_error_ligand() {}
+};
+
 
 #endif

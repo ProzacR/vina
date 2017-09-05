@@ -42,6 +42,9 @@ struct stream_parse_error {
 	parse_error to_parse_error(const path& name) const {
 		return parse_error(name, line, reason);
 	}
+	parse_error_ligand to_parse_error_ligand(const strl& ligand) const {
+		return parse_error_ligand(ligand,line,reason);
+	}
 };
 
 struct parsed_atom : public atom {
@@ -315,7 +318,7 @@ void parse_pdbqt_root_aux_ligand(const strl& in, unsigned& count, parsing_struct
 	std::string str;
 	//while(std::getline(in, str)) {
 	for(strl::const_iterator it = in.begin(); it != in.end(); ++it) {
-		str=it;
+		str=*it;
 		add_context(c, str);
 		++count;
 		if(str.empty()) {} // ignore ""
@@ -361,7 +364,7 @@ void parse_pdbqt_root_ligand(const strl& in, unsigned& count, parsing_struct& p,
 	std::string str;
 	//while(std::getline(in, str)) {
 	for(strl::const_iterator it = in.begin(); it != in.end(); ++it) {
-		str=it;
+		str=*it;
 		add_context(c, str);
 		++count;
 		if(str.empty()) {} // ignore
@@ -378,6 +381,7 @@ void parse_pdbqt_root_ligand(const strl& in, unsigned& count, parsing_struct& p,
 }
 
 void parse_pdbqt_branch(std::istream& in, unsigned& count, parsing_struct& p, context& c, unsigned from, unsigned to); // forward declaration
+void parse_pdbqt_branch_ligand(const strl& in, unsigned& count, parsing_struct& p, context& c, unsigned from, unsigned to); // forward declaration
 
 void parse_pdbqt_branch_aux(std::istream& in, unsigned& count, const std::string& str, parsing_struct& p, context& c) {
 	unsigned first, second;
@@ -436,7 +440,7 @@ void parse_pdbqt_aux_ligand(const strl& in, unsigned& count, parsing_struct& p, 
 
 	//while(std::getline(in, str)) {
 	for(strl::const_iterator it = in.begin(); it != in.end(); ++it) {
-		str=it;
+		str=*it;
 		add_context(c, str);
 		++count;
 		if(str.empty()) {} // ignore ""
@@ -566,13 +570,13 @@ void parse_pdbqt_ligand(const strl& ligand, non_rigid_parsed& nr, context& c) {
 	try {
 		parse_pdbqt_aux_ligand(in, count, p, c, torsdof, false);
 		if(p.atoms.empty()) 
-			throw parse_error(ligand, count, "No atoms in the ligand");
+			throw parse_error_ligand(ligand, count, "No atoms in the ligand");
 		if(!torsdof)
-			throw parse_error(ligand, count, "Missing TORSDOF");
+			throw parse_error_ligand(ligand, count, "Missing TORSDOF");
 		postprocess_ligand(nr, p, c, unsigned(torsdof.get())); // bizarre size_t -> unsigned compiler complaint
 	}
 	catch(stream_parse_error& e) {
-		throw e.to_parse_error(std::string(ligand));
+		throw e.to_parse_error_ligand(ligand);
 	}
 	VINA_CHECK(nr.atoms_atoms_bonds.dim() == nr.atoms.size());
 }
@@ -652,7 +656,7 @@ void parse_pdbqt_branch_ligand(const strl& in, unsigned& count, parsing_struct& 
 	std::string str;
 	//while(std::getline(in, str)) {
 	for(strl::const_iterator it = in.begin(); it != in.end(); ++it) {
-		str= it;
+		str=*it;
 		add_context(c, str);
 		++count;
 		if(str.empty()) {} //ignore ""
