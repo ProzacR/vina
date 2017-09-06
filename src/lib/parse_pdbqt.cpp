@@ -34,7 +34,7 @@
 #include "parse_error.h"
 
 typedef std::list<std::string> strl;
-
+strl::const_iterator it;
 struct stream_parse_error {
 	unsigned line;
 	std::string reason;
@@ -316,8 +316,9 @@ void parse_pdbqt_root_aux(std::istream& in, unsigned& count, parsing_struct& p, 
 
 void parse_pdbqt_root_aux_ligand(const strl& in, unsigned& count, parsing_struct& p, context& c) {
 	std::string str;
+	++it;
 	//while(std::getline(in, str)) {
-	for(strl::const_iterator it = in.begin(); it != in.end(); ++it) {
+	for(; it != in.end(); ++it) {
 		str=*it;
 		add_context(c, str);
 		++count;
@@ -363,7 +364,7 @@ void parse_pdbqt_root(std::istream& in, unsigned& count, parsing_struct& p, cont
 void parse_pdbqt_root_ligand(const strl& in, unsigned& count, parsing_struct& p, context& c) {
 	std::string str;
 	//while(std::getline(in, str)) {
-	for(strl::const_iterator it = in.begin(); it != in.end(); ++it) {
+	for(; it != in.end(); ++it) {
 		str=*it;
 		add_context(c, str);
 		++count;
@@ -437,9 +438,9 @@ void parse_pdbqt_aux_ligand(const strl& in, unsigned& count, parsing_struct& p, 
 	parse_pdbqt_root_ligand(in, count, p, c);
 
 	std::string str;
-
+	++it;
 	//while(std::getline(in, str)) {
-	for(strl::const_iterator it = in.begin(); it != in.end(); ++it) {
+	for(; it != in.end(); ++it) {
 		str=*it;
 		add_context(c, str);
 		++count;
@@ -563,7 +564,8 @@ void postprocess_residue(non_rigid_parsed& nr, parsing_struct& p, context& c) {
 
 void parse_pdbqt_ligand(const strl& ligand, non_rigid_parsed& nr, context& c) {
 	//ifile in(ligand);
-	strl in=ligand;
+	strl in = ligand;
+	it = in.begin();
 	unsigned count = 0;
 	parsing_struct p;
 	boost::optional<unsigned> torsdof;
@@ -654,8 +656,9 @@ void parse_pdbqt_branch(std::istream& in, unsigned& count, parsing_struct& p, co
 
 void parse_pdbqt_branch_ligand(const strl& in, unsigned& count, parsing_struct& p, context& c, unsigned from, unsigned to) {
 	std::string str;
+	++it;
 	//while(std::getline(in, str)) {
-	for(strl::const_iterator it = in.begin(); it != in.end(); ++it) {
+	for(; it != in.end(); ++it) {
 		str=*it;
 		add_context(c, str);
 		++count;
