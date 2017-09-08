@@ -86,7 +86,7 @@ void write_all_output(model& m, const output_container& out, sz how_many,
 	ofile f(make_path(output_name));
 	VINA_FOR(i, how_many) {
 		m.set(out[i].c);
-		m.write_model(f, i+1, remarks[i]); // so that model numbers start with 1
+		m.write_model(f,i+1, remarks[i]); // so that model numbers start with 1
 	}
 }
 
