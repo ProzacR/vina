@@ -96,14 +96,14 @@ struct model {
 		if(num_flex() > 0) // otherwise remark is written in vain
 			write_context(flex_context);
 	}
-	void write_structure(ofile& out, const std::string& remark) const {
+	void write_structure(const std::string& remark) const {
 		std::cout << remark;
 		write_structure();
 	}
 	void write_structure(const path& name) const { ofile out(name); write_structure(); }
-	void write_model(ofile& out, sz model_number, const std::string& remark) const {
+	void write_model(sz model_number, const std::string& remark) const {
 		std::cout << "MODEL"<< '\n';
-		write_structure(out, remark);
+		write_structure(remark);
 		std::cout << "ENDMDL\n";
 	}
 	void seti(const conf& c);
