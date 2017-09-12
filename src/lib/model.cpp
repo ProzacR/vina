@@ -544,7 +544,7 @@ void string_write_coord(sz i, fl x, std::string& str) {
 	out.setf(std::ios::fixed, std::ios::floatfield);
 	out.setf(std::ios::showpoint);
 	out << std::setw(8) << std::setprecision(3) << x;
-	VINA_CHECK(out.str().size() == 8); 
+	VINA_CHECK(out.str().size() == 8);
 	VINA_CHECK(str.size() > i + 8);
 	VINA_FOR(j, 8)
 		str[i+j] = out.str()[j];
@@ -557,15 +557,15 @@ std::string coords_to_pdbqt_string(const vec& coords, const std::string& str) {
 	return tmp;
 }
 
-void model::write_context(const context& c, ofile& out) const {
+void model::write_context(const context& c) const {
 	verify_bond_lengths();
 	VINA_FOR_IN(i, c) {
 		const std::string& str = c[i].first;
 		if(c[i].second) {
-			out << coords_to_pdbqt_string(coords[c[i].second.get()], str) << '\n';
+			std::cout << coords_to_pdbqt_string(coords[c[i].second.get()], str) << '\n';
 		}
 		else
-			out << str << '\n';
+			std::cout << str << '\n';
 	}
 }
 

@@ -1,9 +1,7 @@
-BASE=/usr
-BOOST_VERSION=1_46
-BOOST_INCLUDE = $(BASE)/include
+BOOST_INCLUDE=/usr/lib/x86_64-linux-gnu/ 
 C_PLATFORM=-static -pthread
 GPP=/usr/bin/g++
-C_OPTIONS= -O3 -DNDEBUG
-BOOST_LIB_VERSION=
+C_OPTIONS= -O3 -g
 
 include ../../makefile_common
+# DO NOT DELETE

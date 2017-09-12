@@ -14,8 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-   Author: Dr. Oleg Trott <ot14@columbia.edu>, 
-           The Olson Lab, 
+   Author: Dr. Oleg Trott <ot14@columbia.edu>,
+           The Olson Lab,
            The Scripps Research Institute
 
 */
@@ -72,7 +72,7 @@ models parse_multimodel_pdbqt(const std::string& input) {
 	while(std::getline(in, str)) {
 		++count;
 		if(starts_with(str, "MODEL")) {
-			if(parsing_model == true || parsing_ligand == false) 
+			if(parsing_model == true || parsing_ligand == false)
 				throw parse_error(p, count, "Misplaced MODEL tag");
 			tmp.push_back(model());
 			parsing_model = true;
@@ -110,7 +110,7 @@ models parse_multimodel_pdbqt(const std::string& input) {
 	return tmp;
 }
 
-void write_pdbqt(const strl& lines, const std::string& name) {
+void write_pdbqt(const strl& lines, const std::string& name) {    //Rather than writing, we need to send to vina
 	if(lines.size() > 0) {
 		ofile out(make_path(name));
 		for(strl::const_iterator it = lines.begin(); it != lines.end(); ++it)
@@ -175,9 +175,9 @@ Thank you!\n";
 				.options(desc)
 				.style(command_line_style::default_style ^ command_line_style::allow_guessing)
 				.positional(positional)
-				.run(), 
+				.run(),
 				vm);
-			notify(vm); 
+			notify(vm);
 		}
 		catch(boost::program_options::error& e) {
 			std::cerr << "Command line parse error: " << e.what() << '\n' << "\nCorrect usage:\n" << desc << '\n';
@@ -230,9 +230,9 @@ Thank you!\n";
 
 	// Errors that shouldn't happen:
 
-	catch(std::exception& e) { 
+	catch(std::exception& e) {
 		std::cerr << "\n\nAn error occurred: " << e.what() << ". " << error_message;
-		return 1; 
+		return 1;
 	}
 	catch(internal_error& e) {
 		std::cerr << "\n\nAn internal error occurred in " << e.file << "(" << e.line << "). " << error_message;

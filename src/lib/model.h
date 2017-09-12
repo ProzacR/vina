@@ -90,21 +90,21 @@ struct model {
 
 	void write_flex  (                  const path& name, const std::string& remark) const { write_context(flex_context, name, remark); }
 	void write_ligand(sz ligand_number, const path& name, const std::string& remark) const { VINA_CHECK(ligand_number < ligands.size()); write_context(ligands[ligand_number].cont, name, remark); }
-	void write_structure(ofile& out) const {
+	void write_structure() const {
 		VINA_FOR_IN(i, ligands)
-			write_context(ligands[i].cont, out);
+			write_context(ligands[i].cont);
 		if(num_flex() > 0) // otherwise remark is written in vain
-			write_context(flex_context, out);
+			write_context(flex_context);
 	}
-	void write_structure(ofile& out, const std::string& remark) const {
-		out << remark;
-		write_structure(out);
+	void write_structure(const std::string& remark) const {
+		std::cout << remark;
+		write_structure();
 	}
-	void write_structure(const path& name) const { ofile out(name); write_structure(out); }
-	void write_model(ofile& out, sz model_number, const std::string& remark) const {
-		out << "MODEL " << model_number << '\n';
-		write_structure(out, remark);
-		out << "ENDMDL\n";
+	void write_structure(const path& name) const { ofile out(name); write_structure(); }
+	void write_model(sz model_number, const std::string& remark) const {
+		std::cout << "MODEL"<< '\n';
+		write_structure(remark);
+		std::cout << "ENDMDL\n";
 	}
 	void seti(const conf& c);
 	void sete(const conf& c);
@@ -183,14 +183,14 @@ private:
 	const atom& get_atom(const atom_index& i) const { return (i.in_grid ? grid_atoms[i.i] : atoms[i.i]); }
 	      atom& get_atom(const atom_index& i)       { return (i.in_grid ? grid_atoms[i.i] : atoms[i.i]); }
 
-	void write_context(const context& c, ofile& out) const;
+	void write_context(const context& c) const;
 	void write_context(const context& c, ofile& out, const std::string& remark) const {
 		out << remark;
 	}
-	void write_context(const context& c, const path& name) const {
-		ofile out(name);
-		write_context(c, out);
-	}
+	/*void write_context(const context& c) const {
+		//ofile out(name);
+		write_context(c);
+	}*/
 	void write_context(const context& c, const path& name, const std::string& remark) const {
 		ofile out(name);
 		write_context(c, out, remark);
